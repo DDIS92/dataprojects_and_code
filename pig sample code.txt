@@ -1,0 +1,66 @@
+data = LOAD filepath USING AvroStorage();
+
+data = FILTER data BY (insert column(s)) is not null;
+
+
+/*select star*/
+data = FOREACH data
+GENERATE (insert other column(s));
+
+
+/*treating nulls*/
+
+data = FOREACH data
+GENERATE (columnname IS NULL ? -9: columnname) AS columnname;
+
+
+/*join syntax + alias examples*/ 
+
+combined = JOIN data1 by columnname, data2 by columnname;
+filter_combineddata = FILTER combined by (data1::columnname matches '.*jobs.*';
+
+
+combined = FOREACH filter_combineddate
+GENERATE data1::columnname AS column_one,
+data2::columnname AS column_two
+.
+.
+.
+data2::column100 AS column_one_hundred;
+
+
+
+
+/*group by syntax + manipulations*/
+
+experiment_data = LOAD (insert experiment data path) USING AvroStorage();
+
+
+experiment_111 = filter experiment_data by EXP_ID == 111;
+
+treatment = filter experiment_111 by expgroup == "Treatment";
+control = filter experiment_111 by expgroup == "Control";
+
+
+treatment_user_count = foreach (group treatment by (expgroup)){members = distinct.userid; generate group, COUNT(members);};
+control_user_count = foreach (group control by (expgroup)){members = distinct.userid; generate group, COUNT(members);};
+
+
+
+
+/*more grouping syntax + deduping*/
+treatment_min_time = foreach (group treatment by (ID, click)) generate flatten(group) as (ID, click), MIN(time) AS earliest_clicktime;
+treatment_min_time = distinct treatment_min_time;
+
+
+
+
+
+/*displaying output and/or data counts*/
+
+member_count = UNION treatment_user_count, control_user_count;
+DUMP member_count;
+
+-- (treatment, 50)
+-- (control, 50)
+
